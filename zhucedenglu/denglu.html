@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="css/deng.css">
+		<script src="js/jquery-2.1.4.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery.cookie.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	
+	<body>
+		<div class="div_logo">
+			LOGO
+		</div>
+		<div class="container">
+			<img src="img/dllogo.png" class="sp_img" />
+			<p class="lg">Login Into Your Account</p>
+			<form>
+				<input type="text" name="username" id="username" placeholder="User Name" class="name" />
+				<input type="password" name="psd" id="psd" value="" placeholder="PassWord" class="pass"/>
+				<p class="nr"></p>
+				<input type="submit" id="submit" value="Sign In" /><br />
+				<input type="checkbox" name="check" id="check" /><span class="rem">Remember me</span>
+
+			</form>
+		</div>
+	</body>
+	<script type="text/javascript">
+		if(sessionStorage.getItem("username")){
+			$(".name").val(sessionStorage.getItem("username"));
+			$(".pass").val(sessionStorage.getItem("password"));
+			$(":checkbox").prop("checked",true)
+		}
+		if($.cookie("userName")){
+			$(".name").val($.cookie("userName"));
+			$(".pass").val($.cookie("userPass"));
+			$(":checkbox").prop("checked",true)
+		}
+		//正则验证
+		var reg = /^[A-z]+\w{5,13}$/;
+		var reg1 = /^\w{6,12}$/;
+		//第一个框失去焦点时间	
+		$(".name").blur(function(){
+			//如果没有通过正则验证
+			if(reg.test($(this).val())!=true){
+				//让它的边框变红
+				$(this).css("border","1px solid red");
+			}else{
+				//否则不变
+				$(this).css("border","")
+			}
+		})
+		//第二个框失去焦点时间
+		$(".pass").blur(function(){
+			//如果没有通过正则验证
+			if(reg1.test($(this).val())!=true){
+				//让它的边框变红
+				$(this).css("border","1px solid red")
+			}else{
+				//否则不变
+				$(this).css("border","")
+			}
+		})
+		$("#submit").click(function(){
+			if(reg.test($(".name").val())&&reg1.test($(".pass").val())){
+				$.ajax({
+					type:"post",
+					url:"http://47.92.37.168/luntai/php/index.php?C=Login&M=login",
+					data:{
+						username:$(".name").val(),
+						password:$(".pass").val()
+					},
+					dataType:"json",
+					success:function(data){
+						//console.log(data.code)
+						if(data.code==200){
+							//判断如果复选框被选中
+							if($(":checkbox").prop("checked")){
+								//就给这个cookie保存7天
+								$.cookie("userName",$(".name").val(),{expires:7});
+								$.cookie("userPass",$(".pass").val(),{expires:7});
+								location.href = "../首页/first.html"
+							}else{
+								$.cookie("userName",$(".name").val());
+								$.cookie("userPass",$(".pass").val());
+								location.href = "../首页/first.html"
+							}
+						}else{
+							$(".nr").html(data.message)
+							location.href = "../首页/first.html"
+						}
+					}
+				})
+			}
+			return false;
+		})
+	</script>
+
+</html>
